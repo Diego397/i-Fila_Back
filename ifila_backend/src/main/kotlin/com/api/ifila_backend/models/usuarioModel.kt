@@ -28,4 +28,7 @@ class usuarioModel {
     @Column(nullable = false, length = 20)
     lateinit var numeroCelular:String
 
+    @Column(nullable = false, unique = true, length = 20)
+    lateinit var cpf:String
+
 }
