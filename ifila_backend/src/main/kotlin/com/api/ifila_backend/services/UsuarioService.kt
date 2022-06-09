@@ -25,4 +25,12 @@ class UsuarioService (val usuarioRepository: UsuarioRepository){
     fun existsByCpf(cpf: String): Boolean {
         return usuarioRepository.existsByCpf(cpf)
     }
+
+    fun findAll(): List<UsuarioModel> {
+        return usuarioRepository.findAll()
+    }
+
+    fun delete(usuarioModel: UsuarioModel) {
+        return usuarioRepository.delete(usuarioModel)
+    }
 }

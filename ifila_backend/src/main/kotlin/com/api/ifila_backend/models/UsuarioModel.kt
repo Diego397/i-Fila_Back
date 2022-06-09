@@ -19,9 +19,6 @@ class UsuarioModel {
     @Column(nullable = false)
     lateinit var dataDeNascimento:LocalDate
 
-    @Column(nullable = true, length = 350)
-    lateinit var endereco:String
-
     @Column(nullable = false, unique = true, length = 100)
     lateinit var email:String
 
