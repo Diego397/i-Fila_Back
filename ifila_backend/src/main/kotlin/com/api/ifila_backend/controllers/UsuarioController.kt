@@ -3,25 +3,39 @@ package com.api.ifila_backend.controllers
 import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
-import org.apache.coyote.Response
+import com.api.ifila_backend.dtos.MensagemPadrao
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import java.util.Optional
 import java.util.UUID
 import javax.validation.Valid
 
 @RestController
 @CrossOrigin(origins = ["*"], maxAge = 3600)
-@RequestMapping("/usuarios")
+@RequestMapping(
+    "/usuarios",
+    produces = ["application/json"]
+)
 class UsuarioController (val usuarioService: UsuarioService){
 
-    @PostMapping
-    fun cadastrarUsuario(@RequestBody @Valid usuarioDTO: UsuarioDTO):ResponseEntity<Any>{
+    @PostMapping(consumes = ["application/json"])
+    @ApiOperation(value = "Cadastra um usuário")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Usuário cadastrado com sucesso", response = UsuarioModel::class),
+        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadrao::class)
+    )
+    fun cadastrarUsuario(
+        @ApiParam(name = "User", value = "Informações do usuário")
+        @RequestBody @Valid usuarioDTO: UsuarioDTO
+    ): ResponseEntity<Any> {
 
-        when{
+        when {
             usuarioService.existsByEmail(usuarioDTO.email) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Email já cadastrado."))
             usuarioService.existsByCpf(usuarioDTO.cpf) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Cpf já cadastrado"))
         }
@@ -33,11 +47,20 @@ class UsuarioController (val usuarioService: UsuarioService){
     }
 
     @GetMapping
+    @ApiOperation(value = "Retorna uma lista de usuários")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Lista de usuários", response = UsuarioModel::class, responseContainer = "List"),
+    )
     fun getUsuarios(): ResponseEntity<List<UsuarioModel>> {
         return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll())
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "Retorna um usuário")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Informações de um Usuário", response = UsuarioModel::class),
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class)
+    )
     fun getUsuario(@PathVariable (value = "id") id:UUID): ResponseEntity<Any> {
 
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
@@ -47,8 +70,15 @@ class UsuarioController (val usuarioService: UsuarioService){
         return ResponseEntity.status(HttpStatus.OK).body(usuarioModelOptional)
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}", consumes = ["application/json"])
+    @ApiOperation(value = "Atualiza as informações de um usuário")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Informações atualizadas do Usuário", response = UsuarioModel::class),
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class),
+        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadrao::class)
+    )
     fun putUsuario(@PathVariable (value = "id") id:UUID,
+                   @ApiParam(name = "User", value = "Informações do usuário")
                    @RequestBody @Valid usuarioDTO: UsuarioDTO): ResponseEntity<Any>{
 
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
@@ -69,7 +99,13 @@ class UsuarioController (val usuarioService: UsuarioService){
 
         return ResponseEntity.status(HttpStatus.OK).body(usuarioService.save(usuarioModel))
     }
+
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "Deleta um usuário")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Usuário removido com sucesso", response = MensagemPadrao::class),
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class),
+    )
     fun deleteUsuario(@PathVariable(value = "id") id: UUID): ResponseEntity<Any> {
 
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
