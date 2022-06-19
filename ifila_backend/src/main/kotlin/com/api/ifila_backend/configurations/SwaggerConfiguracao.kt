@@ -1,22 +1,27 @@
 package com.api.ifila_backend.configurations
 
+import com.google.common.base.Predicates
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.web.bind.annotation.RequestMethod
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
-import springfox.documentation.builders.ResponseMessageBuilder
 import springfox.documentation.service.ApiInfo
-import springfox.documentation.service.ResponseMessage
+import springfox.documentation.service.ApiKey
+import springfox.documentation.service.AuthorizationScope
+import springfox.documentation.service.SecurityReference
 import springfox.documentation.spi.DocumentationType
+import springfox.documentation.spi.service.contexts.SecurityContext
 import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
+import java.util.*
+
 
 @Configuration
 @EnableSwagger2
 class SwaggerConfiguracao {
+
     @Bean
     fun api(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
@@ -26,6 +31,8 @@ class SwaggerConfiguracao {
             .build()
             .apiInfo(informacaoApi())
             .useDefaultResponseMessages(false)
+            .securitySchemes(arrayListOf(apiKey()))
+            .securityContexts(listSecurityContext())
     }
 
     private fun informacaoApi(): ApiInfo {
@@ -34,5 +41,37 @@ class SwaggerConfiguracao {
             .description("API para comunicação com o backend do aplicativo i.fila")
             .version("1.0.0")
             .build()
+    }
+
+    private fun apiKey(): ApiKey {
+        return ApiKey("JWT", "Authorization", "header")
+    }
+
+
+    private val methods: List<HttpMethod> = Arrays.asList(
+        HttpMethod.GET,
+        HttpMethod.PUT,
+        HttpMethod.DELETE
+    )
+
+    private fun listSecurityContext(): List<SecurityContext> {
+        val listaSeguranca: MutableList<SecurityContext> = ArrayList()
+
+        listaSeguranca.add(
+            SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.ant("/usuarios/**"))
+                .forHttpMethods(Predicates.`in`(methods))
+                .build()
+        )
+
+        return listaSeguranca
+    }
+
+    private fun defaultAuth(): List<SecurityReference?>? {
+        val authorizationScope = AuthorizationScope("global", "accessEverything")
+        val authorizationScopes = arrayOfNulls<AuthorizationScope>(1)
+        authorizationScopes[0] = authorizationScope
+        return listOf(SecurityReference("JWT", authorizationScopes))
     }
 }

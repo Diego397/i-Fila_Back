@@ -1,5 +1,6 @@
 package com.api.ifila_backend.dtos
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDate
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank

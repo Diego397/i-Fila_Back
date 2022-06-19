@@ -7,10 +7,7 @@ import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
 import com.api.ifila_backend.utils.JWTUtils
-import io.swagger.annotations.ApiOperation
-import io.swagger.annotations.ApiParam
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.ApiResponses
+import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -39,8 +36,8 @@ class UsuarioController (val usuarioService: UsuarioService){
     ): ResponseEntity<Any> {
 
         when {
-            usuarioService.existsByEmail(usuarioDTO.email) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Email já cadastrado."))
-            usuarioService.existsByCpf(usuarioDTO.cpf) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Cpf já cadastrado"))
+            usuarioService.existsByEmail(usuarioDTO.email) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Email já cadastrado."))
+            usuarioService.existsByCpf(usuarioDTO.cpf) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Cpf já cadastrado"))
         }
 
         val usuarioModel = UsuarioModel()
@@ -68,7 +65,7 @@ class UsuarioController (val usuarioService: UsuarioService){
 
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
         if(!usuarioModelOptional.isPresent)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("mensagem" to "Usuário não encontrado!"))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
 
         return ResponseEntity.status(HttpStatus.OK).body(usuarioModelOptional)
     }
@@ -87,13 +84,13 @@ class UsuarioController (val usuarioService: UsuarioService){
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
 
         if (!usuarioModelOptional.isPresent)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("mensagem" to "Usuário não encontrado!"))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
 
         if(usuarioDTO.email != usuarioModelOptional.get().email && usuarioService.existsByEmail(usuarioDTO.email))
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Email já cadastrado."))
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Email já cadastrado."))
 
         if (usuarioDTO.cpf != usuarioModelOptional.get().cpf && usuarioService.existsByCpf(usuarioDTO.cpf))
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("mensagem" to "Cpf já cadastrado"))
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Cpf já cadastrado"))
 
         val usuarioModel = UsuarioModel()
         BeanUtils.copyProperties(usuarioDTO, usuarioModel)
@@ -114,10 +111,10 @@ class UsuarioController (val usuarioService: UsuarioService){
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
 
         if (!usuarioModelOptional.isPresent)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("mensagem" to "Usuário não encontrado!"))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
 
         usuarioService.delete(usuarioModelOptional.get())
 
-        return ResponseEntity.status(HttpStatus.OK).body(mapOf("message" to "Usuário removido com sucesso"))
+        return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Usuário removido com sucesso"))
     }
 }

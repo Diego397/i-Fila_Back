@@ -1,5 +1,6 @@
 package com.api.ifila_backend.models
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -32,6 +33,7 @@ class UsuarioModel {
     var dataDeCriacao: ZonedDateTime = ZonedDateTime.now()
 
     @Column(nullable = false, length = 100)
+    @JsonIgnore
     var senha: String = ""
         get() = field
         set(value) {
