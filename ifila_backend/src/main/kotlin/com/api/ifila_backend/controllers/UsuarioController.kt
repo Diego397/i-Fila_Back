@@ -1,9 +1,12 @@
 package com.api.ifila_backend.controllers
 
+import com.api.ifila_backend.dtos.LoginDTO
+import com.api.ifila_backend.dtos.LoginRespostaDTO
 import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
-import com.api.ifila_backend.dtos.MensagemPadrao
+import com.api.ifila_backend.dtos.MensagemPadraoDTO
+import com.api.ifila_backend.utils.JWTUtils
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -27,8 +30,8 @@ class UsuarioController (val usuarioService: UsuarioService){
     @PostMapping(consumes = ["application/json"])
     @ApiOperation(value = "Cadastra um usuário")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Usuário cadastrado com sucesso", response = UsuarioModel::class),
-        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadrao::class)
+        ApiResponse(code = 201, message = "Usuário cadastrado com sucesso", response = UsuarioModel::class),
+        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadraoDTO::class)
     )
     fun cadastrarUsuario(
         @ApiParam(name = "User", value = "Informações do usuário")
@@ -59,7 +62,7 @@ class UsuarioController (val usuarioService: UsuarioService){
     @ApiOperation(value = "Retorna um usuário")
     @ApiResponses(
         ApiResponse(code = 200, message = "Informações de um Usuário", response = UsuarioModel::class),
-        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class)
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadraoDTO::class)
     )
     fun getUsuario(@PathVariable (value = "id") id:UUID): ResponseEntity<Any> {
 
@@ -74,8 +77,8 @@ class UsuarioController (val usuarioService: UsuarioService){
     @ApiOperation(value = "Atualiza as informações de um usuário")
     @ApiResponses(
         ApiResponse(code = 200, message = "Informações atualizadas do Usuário", response = UsuarioModel::class),
-        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class),
-        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadrao::class)
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadraoDTO::class)
     )
     fun putUsuario(@PathVariable (value = "id") id:UUID,
                    @ApiParam(name = "User", value = "Informações do usuário")
@@ -103,8 +106,8 @@ class UsuarioController (val usuarioService: UsuarioService){
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Deleta um usuário")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Usuário removido com sucesso", response = MensagemPadrao::class),
-        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadrao::class),
+        ApiResponse(code = 200, message = "Usuário removido com sucesso", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Usuário não encontrado", response = MensagemPadraoDTO::class),
     )
     fun deleteUsuario(@PathVariable(value = "id") id: UUID): ResponseEntity<Any> {
 

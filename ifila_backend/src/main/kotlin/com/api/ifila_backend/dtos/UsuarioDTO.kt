@@ -16,6 +16,9 @@ class UsuarioDTO (
     val dataDeNascimento: LocalDate,
 
     @field:NotBlank
+    var senha: String,
+
+    @field:NotBlank
     @field:Size(max=100)
     @Email(regexp = ".+@.+\\..+")
     val email:String,

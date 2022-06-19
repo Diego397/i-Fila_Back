@@ -33,4 +33,8 @@ class UsuarioService (val usuarioRepository: UsuarioRepository){
     fun delete(usuarioModel: UsuarioModel) {
         return usuarioRepository.delete(usuarioModel)
     }
+
+    fun findByEmail(email: String): UsuarioModel? {
+        return usuarioRepository.findByEmail(email)
+    }
 }
