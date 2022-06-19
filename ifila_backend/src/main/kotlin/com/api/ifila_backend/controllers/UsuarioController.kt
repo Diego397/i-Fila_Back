@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import springfox.documentation.annotations.ApiIgnore
 import java.util.Optional
 import java.util.UUID
 import javax.validation.Valid
@@ -22,7 +23,7 @@ import javax.validation.Valid
     "/usuarios",
     produces = ["application/json"]
 )
-class UsuarioController (val usuarioService: UsuarioService){
+class UsuarioController (usuarioService: UsuarioService) : BaseController(usuarioService) {
 
     @PostMapping(consumes = ["application/json"])
     @ApiOperation(value = "Cadastra um usuário")
@@ -116,5 +117,17 @@ class UsuarioController (val usuarioService: UsuarioService){
         usuarioService.delete(usuarioModelOptional.get())
 
         return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Usuário removido com sucesso"))
+    }
+
+    @GetMapping("/me")
+    @ApiOperation(value = "Retorna informações do usuário logado")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Informações do usuário logado", response = UsuarioModel::class)
+    )
+    fun getUsuarioLogado(@ApiIgnore @RequestHeader("Authorization") authorization: String): ResponseEntity<Any> {
+
+        val usuarioModelOptional = lerToken(authorization)
+
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioModelOptional)
     }
 }
