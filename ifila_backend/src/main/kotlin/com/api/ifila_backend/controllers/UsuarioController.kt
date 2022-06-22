@@ -11,6 +11,7 @@ import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.Optional
@@ -33,7 +34,8 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     )
     fun cadastrarUsuario(
         @ApiParam(name = "User", value = "Informações do usuário")
-        @RequestBody @Valid usuarioDTO: UsuarioDTO
+        @RequestBody @Valid usuarioDTO: UsuarioDTO,
+        @RequestParam(name="role", defaultValue = "ROLE_USER", required = false) role: String
     ): ResponseEntity<Any> {
 
         when {
@@ -43,6 +45,8 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
 
         val usuarioModel = UsuarioModel()
         BeanUtils.copyProperties(usuarioDTO, usuarioModel)
+
+        usuarioModel.role = role
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.save(usuarioModel))
     }

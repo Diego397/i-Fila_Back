@@ -1,9 +1,8 @@
 package com.api.ifila_backend.filters
 
 import com.api.ifila_backend.impl.UsuarioDetalheImpl
-import com.api.ifila_backend.repositories.UsuarioRepository
+import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.utils.JWTUtils
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -14,7 +13,7 @@ import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class JWTAutorizadorFilter(authenticationManager: AuthenticationManager, val jwtUtils: JWTUtils, val usuarioRepository: UsuarioRepository)
+class JWTAutorizadorFilter(authenticationManager: AuthenticationManager, val jwtUtils: JWTUtils, val usuarioService: UsuarioService)
     : BasicAuthenticationFilter(authenticationManager) {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
@@ -35,7 +34,7 @@ class JWTAutorizadorFilter(authenticationManager: AuthenticationManager, val jwt
         if (jwtUtils.verificarTokenValido(token)) {
             val idString = jwtUtils.getUsuarioId(token)
 
-            val usuario = usuarioRepository.findByIdOrNull(UUID.fromString(idString))
+            val usuario = usuarioService.findByIdOrNull(UUID.fromString(idString))
                 ?: throw UsernameNotFoundException("Usuário não encontrado")
 
             val usuarioImpl = UsuarioDetalheImpl(usuario)

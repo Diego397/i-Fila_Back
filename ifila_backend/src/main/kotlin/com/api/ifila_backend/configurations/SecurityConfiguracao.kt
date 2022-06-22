@@ -1,12 +1,13 @@
 package com.api.ifila_backend.configurations
 
 import com.api.ifila_backend.filters.JWTAutorizadorFilter
-import com.api.ifila_backend.repositories.UsuarioRepository
+import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.utils.JWTUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -17,13 +18,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 class SecurityConfiguracao : WebSecurityConfigurerAdapter() {
 
     @Autowired
     private lateinit var jwtUtils: JWTUtils
 
     @Autowired
-    private lateinit var usuarioRepository: UsuarioRepository
+    private lateinit var usuarioService: UsuarioService
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable().authorizeRequests()
@@ -37,7 +39,7 @@ class SecurityConfiguracao : WebSecurityConfigurerAdapter() {
                 "/webjars/**").permitAll()
             .anyRequest().authenticated()
 
-        http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils, usuarioRepository))
+        http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils, usuarioService))
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }
 

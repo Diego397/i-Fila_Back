@@ -33,6 +33,9 @@ class UsuarioModel {
     var dataDeCriacao: ZonedDateTime = ZonedDateTime.now()
 
     @Column(nullable = false, length = 100)
+    lateinit var role: String
+
+    @Column(nullable = false, length = 100)
     @JsonIgnore
     var senha: String = ""
         get() = field

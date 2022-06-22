@@ -2,6 +2,7 @@ package com.api.ifila_backend.services
 
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.repositories.UsuarioRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.transaction.Transactional
@@ -36,5 +37,9 @@ class UsuarioService (val usuarioRepository: UsuarioRepository){
 
     fun findByEmail(email: String): UsuarioModel? {
         return usuarioRepository.findByEmail(email)
+    }
+
+    fun findByIdOrNull(id: UUID): UsuarioModel? {
+        return usuarioRepository.findByIdOrNull(id)
     }
 }
