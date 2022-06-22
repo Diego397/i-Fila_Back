@@ -10,7 +10,7 @@ class JWTUtils {
 
     private val chaveSeguranca = "verysafekey"
 
-    fun gerarToken(idUsuario: String, roleUsuario: String) : String {
+    fun gerarToken(idUsuario: String) : String {
         return Jwts.builder()
             .setSubject(idUsuario)
             .signWith(SignatureAlgorithm.HS512, chaveSeguranca.toByteArray())

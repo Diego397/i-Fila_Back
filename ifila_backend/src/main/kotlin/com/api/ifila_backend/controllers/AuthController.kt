@@ -38,7 +38,7 @@ class AuthController (val usuarioService: UsuarioService) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Senha incorreta!"))
         }
 
-        val token = JWTUtils().gerarToken(idUsuario = usuario.id.toString(), roleUsuario = usuario.role)
+        val token = JWTUtils().gerarToken(idUsuario = usuario.id.toString())
 
         return ResponseEntity.status(HttpStatus.OK).body(LoginRespostaDTO(token, usuario.role))
     }
