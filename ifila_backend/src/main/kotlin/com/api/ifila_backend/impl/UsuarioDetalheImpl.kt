@@ -6,7 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class UsuarioDetalheImpl(private val usuario: UsuarioModel) : UserDetails {
-    override fun getAuthorities() = mutableListOf<GrantedAuthority>(SimpleGrantedAuthority(usuario.role))
+    override fun getAuthorities() = mutableListOf<GrantedAuthority>(SimpleGrantedAuthority("ROLE_" + usuario.role))
 
     override fun getPassword() = usuario.senha
 

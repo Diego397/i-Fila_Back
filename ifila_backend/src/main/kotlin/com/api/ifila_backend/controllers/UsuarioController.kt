@@ -35,7 +35,7 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     fun cadastrarUsuario(
         @ApiParam(name = "User", value = "Informações do usuário")
         @RequestBody @Valid usuarioDTO: UsuarioDTO,
-        @RequestParam(name="role", defaultValue = "ROLE_USER", required = false) role: String
+        @RequestParam(name="role", defaultValue = "user", required = false) role: String
     ): ResponseEntity<Any> {
 
         when {
@@ -128,6 +128,7 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     @ApiResponses(
         ApiResponse(code = 200, message = "Informações do usuário logado", response = UsuarioModel::class)
     )
+    @PreAuthorize("hasRole('user')")
     fun getUsuarioLogado(@ApiIgnore @RequestHeader("Authorization") authorization: String): ResponseEntity<Any> {
 
         val usuarioModelOptional = lerToken(authorization)
