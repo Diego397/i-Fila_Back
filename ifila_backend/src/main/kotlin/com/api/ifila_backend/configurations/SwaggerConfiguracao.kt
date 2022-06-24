@@ -48,7 +48,7 @@ class SwaggerConfiguracao {
     }
 
 
-    private val methods: List<HttpMethod> = Arrays.asList(
+    private val metodosUsuario: List<HttpMethod> = Arrays.asList(
         HttpMethod.GET,
         HttpMethod.PUT,
         HttpMethod.DELETE
@@ -61,7 +61,14 @@ class SwaggerConfiguracao {
             SecurityContext.builder()
                 .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.ant("/usuarios/**"))
-                .forHttpMethods(Predicates.`in`(methods))
+                .forHttpMethods(Predicates.`in`(metodosUsuario))
+                .build()
+        )
+
+        listaSeguranca.add(
+            SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.ant("/estabelecimentos/**"))
                 .build()
         )
 

@@ -1,17 +1,13 @@
 package com.api.ifila_backend.controllers
 
-import com.api.ifila_backend.dtos.LoginDTO
-import com.api.ifila_backend.dtos.LoginRespostaDTO
 import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
-import com.api.ifila_backend.utils.JWTUtils
 import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.Optional
@@ -128,7 +124,6 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     @ApiResponses(
         ApiResponse(code = 200, message = "Informações do usuário logado", response = UsuarioModel::class)
     )
-    @PreAuthorize("hasRole('user')")
     fun getUsuarioLogado(@ApiIgnore @RequestHeader("Authorization") authorization: String): ResponseEntity<Any> {
 
         val usuarioModelOptional = lerToken(authorization)
