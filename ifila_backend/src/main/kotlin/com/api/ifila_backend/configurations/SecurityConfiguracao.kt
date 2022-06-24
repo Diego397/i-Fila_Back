@@ -37,7 +37,6 @@ class SecurityConfiguracao : WebSecurityConfigurerAdapter() {
                 "/swagger-ui.html",
                 "/swagger-ui/",
                 "/webjars/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/estabelecimentos").permitAll()
             .anyRequest().authenticated()
 
         http.addFilter(JWTAutorizadorFilter(authenticationManager(), jwtUtils, usuarioService))
