@@ -1,5 +1,6 @@
 package com.api.ifila_backend.models
 
+import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.time.LocalDate
@@ -11,6 +12,7 @@ import javax.persistence.*
 @Table(name = "TB_USUARIO")
 class UsuarioModel {
     @Id
+    @Column(name = "usuarioId")
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id:UUID? = null
 
@@ -34,6 +36,10 @@ class UsuarioModel {
 
     @Column(nullable = false, length = 100)
     lateinit var role: String
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estabelecimentoId")
+    var estabelecimento: EstabelecimentoModel? = null
 
     @Column(nullable = false, length = 100)
     @JsonIgnore
