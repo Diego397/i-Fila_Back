@@ -13,9 +13,6 @@ open class BaseController (open val usuarioService: UsuarioService) {
 
         val usuarioModelOptional = usuarioService.findById(UUID.fromString(usuarioIdString))
 
-        if(!usuarioModelOptional.isPresent)
-            throw java.lang.IllegalArgumentException("Usuário não encontrado")
-
         return usuarioModelOptional
     }
 }

@@ -3,6 +3,7 @@ package com.api.ifila_backend.services
 import com.api.ifila_backend.models.EstabelecimentoModel
 import com.api.ifila_backend.repositories.EstabelecimentoRepository
 import org.springframework.stereotype.Service
+import java.util.*
 import javax.transaction.Transactional
 
 @Service
@@ -11,6 +12,18 @@ class EstabelecimentoService(val estabelecimentoRepository: EstabelecimentoRepos
     @Transactional
     fun save(estabelecimentoModel: EstabelecimentoModel): Any? {
         return estabelecimentoRepository.save(estabelecimentoModel)
+    }
+
+    fun findAll(): List<EstabelecimentoModel> {
+        return estabelecimentoRepository.findAll()
+    }
+
+    fun findById(id: UUID): Optional<EstabelecimentoModel> {
+        return estabelecimentoRepository.findById(id)
+    }
+
+    fun delete(estabelecimentoModel: EstabelecimentoModel) {
+        return estabelecimentoRepository.delete(estabelecimentoModel)
     }
 
 

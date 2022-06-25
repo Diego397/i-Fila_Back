@@ -4,6 +4,8 @@ import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
+import com.api.ifila_backend.dtos.UsuarioPutDTO
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
@@ -80,7 +82,7 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     )
     fun putUsuario(@PathVariable (value = "id") id:UUID,
                    @ApiParam(name = "User", value = "Informações do usuário")
-                   @RequestBody @Valid usuarioDTO: UsuarioDTO): ResponseEntity<Any>{
+                   @RequestBody @Valid usuarioDTO: UsuarioPutDTO): ResponseEntity<Any>{
 
         val usuarioModelOptional: Optional<UsuarioModel> = usuarioService.findById(id)
 
@@ -97,6 +99,9 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
         BeanUtils.copyProperties(usuarioDTO, usuarioModel)
         usuarioModel.id = usuarioModelOptional.get().id
         usuarioModel.dataDeCriacao = usuarioModelOptional.get().dataDeCriacao
+        usuarioModel.senha = usuarioModelOptional.get().senha
+        usuarioModel.role = usuarioModelOptional.get().role
+        usuarioModel.estabelecimento = usuarioModelOptional.get().estabelecimento
 
         return ResponseEntity.status(HttpStatus.OK).body(usuarioService.save(usuarioModel))
     }
