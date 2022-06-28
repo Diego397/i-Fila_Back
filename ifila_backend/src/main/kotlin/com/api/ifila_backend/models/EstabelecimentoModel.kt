@@ -25,4 +25,12 @@ class EstabelecimentoModel {
 
     @Column(nullable = false)
     var dataDeCriacao: ZonedDateTime = ZonedDateTime.now()
+
+    @Column(nullable = false)
+    var statusFila: Boolean = false
+
+    @OneToOne
+    @JoinColumn(name = "filaId")
+    @JsonBackReference
+    lateinit var fila: FilaModel
 }
