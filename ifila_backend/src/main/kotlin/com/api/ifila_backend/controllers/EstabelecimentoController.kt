@@ -37,7 +37,7 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         ApiResponse(code = 409, message = "Conflito com dados salvos", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
-    fun cadastrarUsuario(
+    fun cadastrarEstabelecimento(
         @ApiParam(name = "Estabelecimento", value = "Informações do estabelecimento")
         @RequestBody @Valid estabelecimentoDTO: EstabelecimentoDTO,
         @ApiIgnore @RequestHeader("Authorization") authorization: String

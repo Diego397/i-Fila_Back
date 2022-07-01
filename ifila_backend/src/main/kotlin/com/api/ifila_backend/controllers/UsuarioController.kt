@@ -33,7 +33,7 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     fun cadastrarUsuario(
         @ApiParam(name = "User", value = "Informações do usuário")
         @RequestBody @Valid usuarioDTO: UsuarioDTO,
-        @RequestParam(name="role", defaultValue = "user", required = false) role: String
+        @RequestParam(name="role", defaultValue = "usuario", required = false) role: String
     ): ResponseEntity<Any> {
 
         when {
