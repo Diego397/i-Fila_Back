@@ -1,9 +1,12 @@
 package com.api.ifila_backend.configurations
 
 import com.google.common.base.Predicates
+import org.hibernate.usertype.DynamicParameterizedType.ParameterType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.http.ResponseEntity
+import org.springframework.web.context.request.async.DeferredResult
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
@@ -15,6 +18,8 @@ import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.SecurityContext
 import springfox.documentation.spring.web.plugins.Docket
 import springfox.documentation.swagger2.annotations.EnableSwagger2
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 
 
@@ -33,6 +38,7 @@ class SwaggerConfiguracao {
             .useDefaultResponseMessages(false)
             .securitySchemes(arrayListOf(apiKey()))
             .securityContexts(listSecurityContext())
+            .directModelSubstitute(LocalTime::class.java, String::class.java)
     }
 
     private fun informacaoApi(): ApiInfo {
