@@ -2,6 +2,7 @@ package com.api.ifila_backend.models
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
+import java.time.LocalTime
 import java.util.*
 import javax.persistence.*
 
@@ -16,7 +17,10 @@ class FilaModel {
     @Column(name = "capacidadeMaxima")
     var capacidadeMaxima: Int? = null
 
-    @OneToOne(mappedBy = "fila")
+    @Column(name = "horarioMaximo")
+    var horarioMaximo: LocalTime? = null
+
+    @OneToOne(mappedBy = "fila", cascade = [CascadeType.ALL])
     @JsonManagedReference
     lateinit var estabelecimento: EstabelecimentoModel
 
@@ -27,4 +31,8 @@ class FilaModel {
     @Column(name = "filaPrioridade")
     @ElementCollection
     var filaPrioridade: MutableList<UUID> = mutableListOf<UUID>()
+
+    @Column(name = "codigoFila" )
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="fila_sequence")
+    var codigoFila: String? = null
 }

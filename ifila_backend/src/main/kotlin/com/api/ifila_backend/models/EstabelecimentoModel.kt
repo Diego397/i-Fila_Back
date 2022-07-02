@@ -15,6 +15,9 @@ class EstabelecimentoModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID? = null
 
+    @Column(nullable = false, length = 7)
+    lateinit var codigo: String
+
     @Column(nullable = false, length = 70)
     lateinit var nome:String
 
@@ -28,7 +31,7 @@ class EstabelecimentoModel {
     lateinit var cnpj: String
 
     @Column(nullable = false)
-    lateinit var descricacao: String
+    lateinit var descricao: String
 
     @Column(nullable = false)
     @JsonFormat(pattern = "HH:mm")
@@ -44,7 +47,7 @@ class EstabelecimentoModel {
     @Column(nullable = false)
     var statusFila: Boolean = false
 
-    @OneToOne
+    @OneToOne(cascade = [CascadeType.ALL])
     @JoinColumn(name = "filaId")
     @JsonBackReference
     var fila: FilaModel? = null

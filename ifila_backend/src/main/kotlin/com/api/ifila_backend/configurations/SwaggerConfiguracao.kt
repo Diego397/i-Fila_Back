@@ -53,7 +53,6 @@ class SwaggerConfiguracao {
         return ApiKey("JWT", "Authorization", "header")
     }
 
-
     private val metodosUsuario: List<HttpMethod> = Arrays.asList(
         HttpMethod.GET,
         HttpMethod.PUT,
@@ -75,6 +74,13 @@ class SwaggerConfiguracao {
             SecurityContext.builder()
                 .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.ant("/estabelecimentos/**"))
+                .build()
+        )
+
+        listaSeguranca.add(
+            SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.ant("/fila/**"))
                 .build()
         )
 

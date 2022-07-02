@@ -4,8 +4,10 @@ import com.api.ifila_backend.dtos.EstabelecimentoDTO
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
 import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.EstabelecimentoModel
+import com.api.ifila_backend.models.FilaModel
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.EstabelecimentoService
+import com.api.ifila_backend.services.FilaService
 import com.api.ifila_backend.services.UsuarioService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -27,6 +29,7 @@ import javax.validation.Valid
     produces = ["application/json"]
 )
 class EstabelecimentoController(val estabelecimentoService: EstabelecimentoService,
+                                val filaService: FilaService,
                                 usuarioService: UsuarioService) : BaseController(usuarioService) {
 
     @PostMapping(consumes = ["application/json"])
@@ -54,6 +57,13 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
 
         val estabelecimentoModel = EstabelecimentoModel()
         BeanUtils.copyProperties(estabelecimentoDTO, estabelecimentoModel)
+
+        val filaModel = FilaModel()
+        filaModel.estabelecimento = estabelecimentoModel
+        filaModel.codigoFila = estabelecimentoDTO.codigoFila
+        filaService.save(filaModel)
+
+        estabelecimentoModel.fila = filaModel
 
         usuarioModel.estabelecimento = estabelecimentoModel
 
