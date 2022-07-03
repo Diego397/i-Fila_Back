@@ -31,6 +31,7 @@ class UsuarioService (val usuarioRepository: UsuarioRepository){
         return usuarioRepository.findAll()
     }
 
+    @Transactional
     fun delete(usuarioModel: UsuarioModel) {
         return usuarioRepository.delete(usuarioModel)
     }

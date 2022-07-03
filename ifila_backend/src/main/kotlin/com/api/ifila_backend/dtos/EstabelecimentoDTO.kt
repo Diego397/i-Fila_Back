@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import java.time.LocalTime
+import javax.persistence.Column
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -49,7 +50,11 @@ data class EstabelecimentoDTO (
     @ApiModelProperty(position = 8, example = "22:00")
     var horarioFechamento: LocalTime,
 
-    @field:NotBlank
-    @ApiModelProperty(position = 9, example = "1AB32")
-    var codigoFila: String
+    @NotNull
+    @ApiModelProperty(position = 9, example = "Outros")
+    var categoria: String,
+
+    @NotNull
+    @ApiModelProperty(position = 10)
+    var linkImagem: String
 )

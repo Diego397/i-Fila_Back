@@ -60,7 +60,7 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
 
         val filaModel = FilaModel()
         filaModel.estabelecimento = estabelecimentoModel
-        filaModel.codigoFila = estabelecimentoDTO.codigoFila
+        filaModel.codigoFila = estabelecimentoDTO.codigo
         filaService.save(filaModel)
 
         estabelecimentoModel.fila = filaModel
@@ -168,6 +168,26 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         if (!usuarioModelOptional.isPresent)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
 
+        if (usuarioModelOptional.get().estabelecimento == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não cadastrado!"))
+
         return ResponseEntity.status(HttpStatus.OK).body(usuarioModelOptional.get().estabelecimento)
+    }
+
+    @GetMapping("/codigo/{codigoEstab}")
+    @ApiOperation(value = "Retorna um estabelecimento")
+    @ApiResponses(
+        ApiResponse(code = 200, message = "Informações de um Estabelecimento", response = EstabelecimentoModel::class),
+        ApiResponse(code = 404, message = "Estabelecimento não encontrado", response = MensagemPadraoDTO::class)
+    )
+    fun getEstabelecimentoPorCodigo(
+        @PathVariable (value = "codigoEstab") codigoEstab: String
+    ): ResponseEntity<Any> {
+
+        val estabelecimentoModelOptional: Optional<EstabelecimentoModel> = estabelecimentoService.findByCode(codigoEstab)
+        if(!estabelecimentoModelOptional.isPresent)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não encontrado!"))
+
+        return ResponseEntity.status(HttpStatus.OK).body(estabelecimentoModelOptional)
     }
 }

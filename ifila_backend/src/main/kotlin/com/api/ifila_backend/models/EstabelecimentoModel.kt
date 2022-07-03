@@ -2,6 +2,7 @@ package com.api.ifila_backend.models
 
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -47,8 +48,14 @@ class EstabelecimentoModel {
     @Column(nullable = false)
     var statusFila: Boolean = false
 
+    @Column(nullable = false)
+    lateinit var categoria: String
+
+    @Column(nullable = false)
+    lateinit var linkImagem: String
+
     @OneToOne(cascade = [CascadeType.ALL])
     @JoinColumn(name = "filaId")
-    @JsonBackReference
+    @JsonIgnore
     var fila: FilaModel? = null
 }

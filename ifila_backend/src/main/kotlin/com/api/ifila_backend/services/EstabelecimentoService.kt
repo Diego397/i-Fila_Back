@@ -26,5 +26,7 @@ class EstabelecimentoService(val estabelecimentoRepository: EstabelecimentoRepos
         return estabelecimentoRepository.delete(estabelecimentoModel)
     }
 
-
+    fun findByCode(codigoEstab: String): Optional<EstabelecimentoModel> {
+        return estabelecimentoRepository.findByCodigo(codigoEstab)
+    }
 }

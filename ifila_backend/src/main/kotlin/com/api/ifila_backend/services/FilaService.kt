@@ -5,6 +5,7 @@ import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.repositories.FilaRepository
 import org.springframework.stereotype.Service
 import java.util.*
+import javax.transaction.Transactional
 
 @Service
 class FilaService (val filaRepository: FilaRepository) {
@@ -24,6 +25,7 @@ class FilaService (val filaRepository: FilaRepository) {
         return filaRepository.findByCodigoFila(codigoFila)
     }
 
+    @Transactional
     fun save(filaModel: FilaModel): FilaModel {
         return filaRepository.save(filaModel)
     }

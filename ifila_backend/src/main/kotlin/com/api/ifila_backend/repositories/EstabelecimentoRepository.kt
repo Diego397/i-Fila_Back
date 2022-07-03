@@ -7,5 +7,5 @@ import java.util.*
 
 @Repository
 interface EstabelecimentoRepository : JpaRepository<EstabelecimentoModel, UUID> {
-
+    fun findByCodigo(codigoEstab: String): Optional<EstabelecimentoModel>
 }
