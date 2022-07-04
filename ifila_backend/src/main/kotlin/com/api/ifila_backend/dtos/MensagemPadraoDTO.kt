@@ -1,5 +1,5 @@
 package com.api.ifila_backend.dtos
 
-class MensagemPadraoDTO (
+data class MensagemPadraoDTO (
     var mensagem: String
 )

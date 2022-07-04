@@ -13,6 +13,7 @@ data class InfoFilaEstabelecimentoDTO (
     val clienteConfirmouPresenca: Boolean,
     val chamarCliente: Boolean,
 
+
     @JsonFormat(pattern = "HH:mm")
     @ApiModelProperty(example = "00:10")
     val tempoMedio: LocalTime,

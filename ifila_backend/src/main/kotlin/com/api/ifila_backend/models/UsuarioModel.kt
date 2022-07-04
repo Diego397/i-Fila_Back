@@ -44,12 +44,12 @@ class   UsuarioModel {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JoinColumn(name = "infoFilaId")
-    @JsonIgnore
+//    @JsonIgnore
     var infoFila: UsuarioInfoFilaModel? = null
 
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JoinColumn(name = "estabelecimentoId")
-    @JsonIgnore
+//    @JsonIgnore
     var estabelecimento: EstabelecimentoModel? = null
 
     @Column(nullable = false, length = 100)

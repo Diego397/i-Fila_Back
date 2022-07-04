@@ -23,5 +23,8 @@ class UsuarioInfoFilaModel(
     var tipoFila: String = tipoFila
 
     @Column(nullable = false)
+    var presencaSolicitada: Boolean = false
+
+    @Column(nullable = false)
     var codigoFila: String = codigoFila
 }

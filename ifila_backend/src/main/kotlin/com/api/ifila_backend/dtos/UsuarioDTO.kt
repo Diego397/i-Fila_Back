@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @ApiModel
-class UsuarioDTO (
+data class UsuarioDTO (
 
     @field:NotBlank
     @Size(max=70)

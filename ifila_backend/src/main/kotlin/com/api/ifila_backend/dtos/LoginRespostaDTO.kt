@@ -1,6 +1,6 @@
 package com.api.ifila_backend.dtos
 
-class LoginRespostaDTO (
+data class LoginRespostaDTO (
     val token: String,
     val role: String
 )

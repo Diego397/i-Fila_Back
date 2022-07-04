@@ -1,9 +1,6 @@
 package com.api.ifila_backend.controllers
 
-import com.api.ifila_backend.dtos.AbrirFilaDTO
-import com.api.ifila_backend.dtos.InfoFilaEstabelecimentoDTO
-import com.api.ifila_backend.dtos.InfoPosicaoFilaDTO
-import com.api.ifila_backend.dtos.MensagemPadraoDTO
+import com.api.ifila_backend.dtos.*
 import com.api.ifila_backend.models.FilaModel
 import com.api.ifila_backend.models.UsuarioInfoFilaModel
 import com.api.ifila_backend.models.UsuarioModel
@@ -12,6 +9,7 @@ import com.api.ifila_backend.services.FilaService
 import com.api.ifila_backend.services.UsuarioInfoFilaService
 import com.api.ifila_backend.services.UsuarioService
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
@@ -173,23 +171,46 @@ class FilaController (val filaService: FilaService,
 
         val filaModel = estabelecimentoModel.fila!!
 
+        if (filaModel.filaPrincipal.isEmpty() && filaModel.filaPrioridade.isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Não há nenhum usuario na fila!"))
+
         if (filaModel.chamarCliente)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Estabelecimento já solicitou a presença do cliente!"))
+
+        var idPrimeiro:UUID? = null
+
+        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
+            if (!filaModel.filaPrincipal.isEmpty())
+                idPrimeiro = filaModel.filaPrincipal[0]
+            else
+                idPrimeiro = filaModel.filaPrioridade[0]
+        else // O ultimo chamado foi normal
+            if (!filaModel.filaPrioridade.isEmpty())
+                idPrimeiro = filaModel.filaPrioridade[0]
+            else
+                idPrimeiro = filaModel.filaPrincipal[0]
+
+        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)
+
+        usuarioFila!!.infoFila!!.presencaSolicitada = true
+        usuarioService.save(usuarioFila)
 
         filaModel.chamarCliente = true
         filaService.save(filaModel)
 
-        return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Presença do cliente solicitada!"))
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioFila)
     }
 
     @PutMapping("/atendercliente")
-    @ApiOperation(value = "Solicita confirmação do próximo cliente de uma fila")
+    @ApiOperation(value = "Atende ou pula cliente na fila")
     @ApiResponses(
 //        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
 //        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun atenderCliente(
+        @ApiParam(name = "pular", value = "0 - 1")
+        @RequestParam(name="pular", defaultValue = "0", required = false) pular: String,
         @ApiIgnore @RequestHeader("Authorization") authorization: String
     ): ResponseEntity<Any> {
         val usuarioModelOptional = lerToken(authorization)
@@ -205,21 +226,113 @@ class FilaController (val filaService: FilaService,
 
         val filaModel = estabelecimentoModel.fila!!
 
-        if (!filaModel.chamarCliente)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Estabelecimento não solicitou a presença do cliente!"))
+        val tamanhoFilaPrincipal = filaModel.filaPrincipal.size
+        val tamanhoFilaPrioridade = filaModel.filaPrioridade.size
 
-        if (!filaModel.clienteConfirmouPresenca)
+        if (tamanhoFilaPrincipal == 0 && tamanhoFilaPrioridade == 0)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Não há nenhum usuario na fila!"))
+
+
+        if (!filaModel.clienteConfirmouPresenca && pular != "0")
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
 
-        // A FAZER!
 
-        // Se tiver gnt na prioridade, atender usuário da prioridade
-        // Se não, atender da fila principal
-        // Remover primeiro usuário da fila
-        // Utilizar função private removerUsuarioFila pra remover informações da fila no usuário
+        var idPrimeiro:UUID? = null
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
+        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
+            if (!filaModel.filaPrincipal.isEmpty()) {
+                idPrimeiro = filaModel.filaPrincipal[0]
+                filaModel.tipoAtendido = false
+                filaModel.filaPrincipal.removeFirst()
+            }
+            else {
+                idPrimeiro = filaModel.filaPrioridade[0]
+                filaModel.tipoAtendido = true
+                filaModel.filaPrioridade.removeFirst()
+            }
+        else // O ultimo chamado foi normal
+            if (!filaModel.filaPrioridade.isEmpty()) {
+                idPrimeiro = filaModel.filaPrioridade[0]
+                filaModel.tipoAtendido = true
+                filaModel.filaPrioridade.removeFirst()
+            }
+            else {
+                idPrimeiro = filaModel.filaPrincipal[0]
+                filaModel.tipoAtendido = false
+                filaModel.filaPrincipal.removeFirst()
+            }
+
+        removerUsuarioFila(idPrimeiro)
+        filaModel.chamarCliente = false
+        filaModel.clienteConfirmouPresenca = false
+
+        filaService.save(filaModel)
+
+        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)!!
+
+        var mensagem = ""
+        if (pular == "1") // Cliente Pulado
+            mensagem = "O Cliente foi Pulado!"
+        else
+            mensagem = "O Cliente foi Atendido"
+
+        return ResponseEntity.status(HttpStatus.OK).body(AtenderClienteDTO(
+            id = usuarioFila.id,
+            nome = usuarioFila.nome,
+            dataDeNascimento = usuarioFila.dataDeNascimento,
+            email = usuarioFila.email,
+            numeroCelular = usuarioFila.numeroCelular,
+            cpf = usuarioFila.cpf,
+            mensagem = mensagem
+        ))
     }
+
+/*    @PutMapping("/pularcliente")
+    @ApiOperation(value = "Pular o cliente que foi chamado e não confirmou a presença")
+    @ApiResponses(
+//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
+//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+    )
+    @PreAuthorize("hasRole('estabelecimento')")
+    fun pularCliente(
+        @PathVariable (value = "codigoFila") codigoFila: String,
+        @RequestParam(name="Tipo de Fila", defaultValue = "principal", required = false) tipoFila: String,
+        @ApiIgnore @RequestHeader("Authorization") authorization: String
+    ): ResponseEntity<Any> {
+
+        val usuarioModelOptional = lerToken(authorization)
+        if (!usuarioModelOptional.isPresent)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
+        val usuarioModel = usuarioModelOptional.get()
+
+        val estabelecimentoModel = usuarioModel.estabelecimento
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não cadastrado!"))
+
+        if (!estabelecimentoModel.statusFila)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Fila não está aberta!"))
+
+        val filaModel = estabelecimentoModel.fila!!
+
+        if (!filaModel.chamarCliente)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Presença do cliente não solicitada!"))
+
+        var idPrimeiro: UUID? = null
+
+        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
+            if (!filaModel.filaPrincipal.isEmpty())
+                idPrimeiro = filaModel.filaPrincipal[0]
+            else
+                idPrimeiro = filaModel.filaPrioridade[0]
+        else // O ultimo chamado foi normal
+            if (!filaModel.filaPrioridade.isEmpty())
+                idPrimeiro = filaModel.filaPrioridade[0]
+            else
+                idPrimeiro = filaModel.filaPrincipal[0]
+
+        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)
+
+        return
+    }*/
 
 
     // Rotas que podem ser acessadas pelos usuários
@@ -317,13 +430,11 @@ class FilaController (val filaService: FilaService,
         if (usuarioModel.infoFila!!.tipoFila == "prioridade")
             posicaoCliente = filaModel.filaPrioridade.indexOf(usuarioModel.id) + 1
         else
-            posicaoCliente = filaModel.filaPrincipal.indexOf(usuarioModel.id) + 1 + filaModel.filaPrioridade.size
+            posicaoCliente = filaModel.filaPrincipal.indexOf(usuarioModel.id) + 1
 
-        var deveConfirmarPresenca: Boolean = false
-        if (posicaoCliente == 1 && filaModel.chamarCliente && !filaModel.clienteConfirmouPresenca)
-            deveConfirmarPresenca = true
-
-        return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(posicao = posicaoCliente, deveConfirmarPresenca = deveConfirmarPresenca, tempoMedio = LocalTime.parse("00:05")))
+        return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
+            posicao = posicaoCliente, deveConfirmarPresenca = usuarioModel.infoFila!!.presencaSolicitada, tempoMedio = LocalTime.parse("00:05"))
+        )
     }
 
     @PutMapping("/sair")
@@ -385,17 +496,15 @@ class FilaController (val filaService: FilaService,
         if (!filaModel.chamarCliente)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Estabelecimento não chamou cliente!"))
 
-        var primeiroFila = false
-
-        if ((usuarioModel.infoFila!!.tipoFila == "prioridade" && filaModel.filaPrioridade.first() == usuarioModel.id)
-            || (filaModel.filaPrioridade.size == 0 && usuarioModel.infoFila!!.tipoFila == "principal" && filaModel.filaPrincipal.first() == usuarioModel.id))
-            primeiroFila = true
-
-        if (!primeiroFila)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Usuário não é o primeiro da fila!"))
+        if (!usuarioModel.infoFila!!.presencaSolicitada)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Presença não solicitada!"))
 
         filaModel.clienteConfirmouPresenca = true
+        filaModel.chamarCliente = false
         filaService.save(filaModel)
+
+        usuarioModel.infoFila!!.presencaSolicitada = false
+        usuarioService.save(usuarioModel)
 
         return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Presença confirmada!"))
     }

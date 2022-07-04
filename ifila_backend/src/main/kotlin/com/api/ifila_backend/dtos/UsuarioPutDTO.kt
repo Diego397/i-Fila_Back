@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-class UsuarioPutDTO (
+data class UsuarioPutDTO (
     @field:NotBlank
     @Size(max=70)
     val nome:String,

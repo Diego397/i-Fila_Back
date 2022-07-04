@@ -30,6 +30,9 @@ class FilaModel {
     @Column(name = "chamarCliente" )
     var chamarCliente: Boolean = false
 
+    @Column(name = "tipoAtendido" ) // false = normal, true = prioridade
+    var tipoAtendido: Boolean = false
+
     @Column(name = "filaPrincipal")
     @ElementCollection
     var filaPrincipal: MutableList<UUID> = mutableListOf<UUID>()
