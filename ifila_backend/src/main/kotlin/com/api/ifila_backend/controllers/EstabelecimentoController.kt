@@ -9,6 +9,7 @@ import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.EstabelecimentoService
 import com.api.ifila_backend.services.FilaService
 import com.api.ifila_backend.services.UsuarioService
+import com.api.ifila_backend.utils.FilaUtils
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -30,7 +31,8 @@ import javax.validation.Valid
 )
 class EstabelecimentoController(val estabelecimentoService: EstabelecimentoService,
                                 val filaService: FilaService,
-                                usuarioService: UsuarioService) : BaseController(usuarioService) {
+                                usuarioService: UsuarioService,
+                                val filaUtils: FilaUtils) : BaseController(usuarioService) {
 
     @PostMapping(consumes = ["application/json"])
     @ApiOperation(value = "Cadastra um estabelecimento")
@@ -194,7 +196,7 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não encontrado!"))
 
         val estabelecimentoModel = estabelecimentoModelOptional.get()
-
+        var filaModel = estabelecimentoModel.fila!!
 
         return ResponseEntity.status(HttpStatus.OK).body(EstabelecimentoReturnDTO(
             codigo = estabelecimentoModel.codigo,
@@ -207,9 +209,10 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
             horarioFechamento = estabelecimentoModel.horarioFechamento,
             categoria = estabelecimentoModel.categoria,
             linkImagem = estabelecimentoModel.linkImagem,
-            qtdPessoasFilaPrincipal = estabelecimentoModel.fila!!.filaPrincipal?.size,
-            qtdPessoasFilaPrioridade = estabelecimentoModel.fila!!.filaPrioridade?.size!!,
-            tempoMedioFilaPrincipal = estabelecimentoModel.fila!!.tempoMedioPrincipal,
-            tempoMedioFilaPrioridade = estabelecimentoModel.fila!!.tempoMedioPrioridade))
+            qtdPessoasPrincipal = filaModel.filaPrincipal.size,
+            qtdPessoasPrioridade = filaModel.filaPrioridade.size,
+            tempoMedioPrincipal = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal),
+            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade)
+        ))
     }
 }

@@ -1,13 +1,9 @@
 package com.api.ifila_backend.models
 
 import com.fasterxml.jackson.annotation.JsonBackReference
-import org.apache.tomcat.jni.Local
-import java.time.Duration
 import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.util.*
 import javax.persistence.*
-import kotlin.time.Duration.Companion.minutes
 
 @Entity
 @Table(name = "TB_FILA")
@@ -35,14 +31,18 @@ class FilaModel {
     @Column(name = "ultimoPrioridade" ) // false = normal, true = prioridade
     var ultimoPrioridade: Boolean = false
 
-    @Column(name = "qtdUsuariosAtendidos" )
-    var quantidadeUsuariosAtendidos: Boolean = false
+    @Column(name = "qtdUsuariosAtendidosPrincipal" )
+    var qtdUsuariosAtendidosPrincipal: Int = 1
+
+    @Column(name = "qtdUsuariosAtendidosPrioridade" )
+    var qtdUsuariosAtendidosPrioridade: Int = 1
 
     @Column(name = "tempoMedioPrincipal" )
-    var tempoMedioPrincipal: kotlin.time.Duration = 10.minutes
+    var tempoMedioPrincipal: Long = 1
 
     @Column(name = "tempoMedioPrioridade" )
-    var tempoMedioPrioridade: kotlin.time.Duration = 10.minutes
+    var tempoMedioPrioridade: Long = 1
+
 
     @Column(name = "filaPrincipal")
     @ElementCollection

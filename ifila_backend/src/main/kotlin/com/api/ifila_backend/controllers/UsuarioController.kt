@@ -5,7 +5,6 @@ import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
 import com.api.ifila_backend.dtos.UsuarioPutDTO
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus

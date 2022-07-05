@@ -109,17 +109,19 @@ data class EstabelecimentoReturnDTO(
 
     @NotNull
     @ApiModelProperty(position = 11)
-    var qtdPessoasFilaPrincipal: Int,
+    var qtdPessoasPrincipal: Int,
 
     @NotNull
     @ApiModelProperty(position = 12)
-    var qtdPessoasFilaPrioridade: Int,
+    var qtdPessoasPrioridade: Int,
 
     @NotNull
-    @ApiModelProperty(position = 13)
-    var tempoMedioFilaPrincipal: kotlin.time.Duration,
+    @JsonFormat(pattern = "HH:mm:ss")
+    @ApiModelProperty(position = 13, example = "00:05")
+    var tempoMedioPrincipal: LocalTime,
 
     @NotNull
-    @ApiModelProperty(position = 14)
-    var tempoMedioFilaPrioridade: kotlin.time.Duration,
+    @JsonFormat(pattern = "HH:mm:ss")
+    @ApiModelProperty(position = 14, example = "00:05")
+    var tempoMedioPrioridade: LocalTime,
 )

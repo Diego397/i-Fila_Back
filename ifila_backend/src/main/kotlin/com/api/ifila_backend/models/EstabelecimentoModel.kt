@@ -1,6 +1,5 @@
 package com.api.ifila_backend.models
 
-import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalTime

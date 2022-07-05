@@ -8,6 +8,7 @@ import com.api.ifila_backend.services.EstabelecimentoService
 import com.api.ifila_backend.services.FilaService
 import com.api.ifila_backend.services.UsuarioInfoFilaService
 import com.api.ifila_backend.services.UsuarioService
+import com.api.ifila_backend.utils.FilaUtils
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -17,15 +18,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.validation.Valid
-import kotlin.time.Duration.Companion.minutes
 
 @RestController
 @CrossOrigin(origins = ["*"], maxAge = 3600)
@@ -36,7 +35,8 @@ import kotlin.time.Duration.Companion.minutes
 class FilaController (val filaService: FilaService,
                       val estabelecimentoService: EstabelecimentoService,
                       val usuarioInfoFilaService: UsuarioInfoFilaService,
-                      usuarioService: UsuarioService) : BaseController(usuarioService) {
+                      usuarioService: UsuarioService,
+                      val filaUtils: FilaUtils) : BaseController(usuarioService) {
 
     // Rotas que podem ser acessadas pelos estabelecimentos
 
@@ -69,6 +69,10 @@ class FilaController (val filaService: FilaService,
         filaModel.horarioMaximo = abrirFilaDTO.horarioMaximoEntrada
         filaModel.clienteConfirmouPresenca = false
         filaModel.chamarCliente = false
+        filaModel.qtdUsuariosAtendidosPrincipal = 0
+        filaModel.qtdUsuariosAtendidosPrioridade = 0
+        filaModel.tempoMedioPrincipal = 1
+        filaModel.tempoMedioPrioridade = 1
 
         estabelecimentoService.save(estabelecimentoModel)
 
@@ -78,7 +82,7 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/fechar")
     @ApiOperation(value = "Fecha fila de um estabelecimento")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Fila fechada", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 200, message = "Fila fechada", response = FecharFilaReturnDTO::class),
         ApiResponse(code = 400, message = "Fila não está aberta", response = MensagemPadraoDTO::class),
         ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
@@ -115,7 +119,12 @@ class FilaController (val filaService: FilaService,
 
         estabelecimentoService.save(estabelecimentoModel)
 
-        return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Fila fechada!"))
+        return ResponseEntity.status(HttpStatus.OK).body(FecharFilaReturnDTO(
+            qtdUsuariosAtendidiosPrincipal = filaModel.qtdUsuariosAtendidosPrincipal,
+            qtdUsuariosAtendidiosPrioridade = filaModel.qtdUsuariosAtendidosPrioridade,
+            tempoMedioPrincipal = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal),
+            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade)
+        ))
     }
 
     @GetMapping("/info")
@@ -149,8 +158,8 @@ class FilaController (val filaService: FilaService,
             tamanhoFilaPrincipal = tamanhoFilaPrincipal,
             tamanhoFilaPrioridade = tamanhoFilaPrioridade,
             maximoPessoasFila = filaModel.capacidadeMaxima!!,
-//            ARRUMAR: tempo deve ser calculado
-            tempoMedio = LocalTime.parse("00:05"),
+            tempoMedioPrincipal = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal),
+            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade),
             horarioMaximoEntrada = filaModel.horarioMaximo!!,
             chamarCliente = filaModel.chamarCliente,
             clienteConfirmouPresenca = filaModel.clienteConfirmouPresenca
@@ -247,35 +256,44 @@ class FilaController (val filaService: FilaService,
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
 
         var idPrimeiro:UUID? = null
-        var tempoMedioFilaPrincipal: LocalTime? = null
-        var tempoMedioFilaPrioridade: LocalTime? = null
         var filaPrincipal = true
 
-// ULTIMA: PRIORIDADE && PRINCIPAL: VAZIA || ULTIMA: PRINCIPAL && PRIORIDADE: NAO VAZIA
         if ((filaModel.ultimoPrioridade && filaModel.filaPrincipal.isEmpty()) || (!filaModel.ultimoPrioridade && filaModel.filaPrioridade.isNotEmpty())) {
             idPrimeiro = filaModel.filaPrioridade[0]
             filaModel.ultimoPrioridade = true
             filaModel.filaPrioridade.removeFirst()
             filaPrincipal = false
+            if (pular == "0")
+                filaModel.qtdUsuariosAtendidosPrioridade += 1
         } else {
             idPrimeiro = filaModel.filaPrincipal[0]
             filaModel.ultimoPrioridade = false
             filaModel.filaPrincipal.removeFirst()
+            filaModel.qtdUsuariosAtendidosPrincipal += 1
         }
 
         val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)!!
 
         var horarioSaida: LocalDateTime = LocalDateTime.now(ZoneId.of("America/Fortaleza"))
 
-//        usuarioFila.infoFila!!.horarioEntrada - horarioSaida
-        // ARRUMAR: FAZER O DURATION FUNCIONAR
-        val duracao = 5.minutes
+        val duracao = ChronoUnit.SECONDS.between(usuarioFila.infoFila!!.horarioEntrada, horarioSaida)
+        if (filaPrincipal) {
+            val segundosTotais = filaModel.qtdUsuariosAtendidosPrincipal * filaModel.tempoMedioPrincipal
+            if (pular == "0")
+                filaModel.qtdUsuariosAtendidosPrincipal += 1
 
-        if (filaPrincipal)
-            filaModel.tempoMedioPrincipal = duracao
-        else
-            filaModel.tempoMedioPrioridade = duracao
+            val novaMedia = (segundosTotais + duracao) / filaModel.qtdUsuariosAtendidosPrincipal
 
+            filaModel.tempoMedioPrincipal = novaMedia
+        } else {
+            val segundosTotais = filaModel.qtdUsuariosAtendidosPrioridade * filaModel.tempoMedioPrioridade
+            if (pular == "0")
+                filaModel.qtdUsuariosAtendidosPrioridade += 1
+
+            val novaMedia = (segundosTotais + duracao) / filaModel.qtdUsuariosAtendidosPrioridade
+
+            filaModel.tempoMedioPrioridade = novaMedia
+        }
         removerUsuarioFila(idPrimeiro)
         filaModel.chamarCliente = false
         filaModel.clienteConfirmouPresenca = false
@@ -285,8 +303,9 @@ class FilaController (val filaService: FilaService,
         var mensagem = ""
         if (pular == "1") // Cliente Pulado
             mensagem = "O Cliente foi Pulado!"
-        else
+        else {
             mensagem = "O Cliente foi Atendido"
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(AtenderClienteDTO(
             id = usuarioFila.id,
@@ -349,12 +368,15 @@ class FilaController (val filaService: FilaService,
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Horário máximo da fila ultrapassado!"))
 
         val posicaoCliente: Int
+        val tempoMedioLong: Long
         if (tipoFila == "prioridade") {
             filaModel.filaPrioridade.add(usuarioModel.id!!)
             posicaoCliente = filaModel.filaPrioridade.size
+            tempoMedioLong = filaModel.tempoMedioPrioridade
         } else {
             filaModel.filaPrincipal.add(usuarioModel.id!!)
-            posicaoCliente = filaModel.filaPrincipal.size + filaModel.filaPrioridade.size
+            posicaoCliente = filaModel.filaPrincipal.size
+            tempoMedioLong = filaModel.tempoMedioPrincipal
         }
 
         filaService.save(filaModel)
@@ -366,12 +388,13 @@ class FilaController (val filaService: FilaService,
 
         usuarioService.save(usuarioModel)
 
+        val tempoMedio = filaUtils.calcularTempoMedio(tempoMedioLong)
+
         return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
             posicao = posicaoCliente,
             deveConfirmarPresenca = false,
-            tempoMedioPrincipal = filaModel.tempoMedioPrincipal,
-            tempoMedioPrioridade = filaModel.tempoMedioPrioridade)
-        )
+            tempoMedio = tempoMedio,
+        ))
     }
 
     @GetMapping("/infoposicao")
@@ -405,13 +428,17 @@ class FilaController (val filaService: FilaService,
         else
             posicaoCliente = filaModel.filaPrincipal.indexOf(usuarioModel.id) + 1
 
+        var tempoMedio: LocalTime
+        if (usuarioModel.infoFila!!.tipoFila == "principal")
+            tempoMedio = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal)
+        else
+            tempoMedio = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade)
+
         return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
             posicao = posicaoCliente,
-            deveConfirmarPresenca = usuarioModel.infoFila!!.presencaSolicitada,
-            tempoMedioPrincipal = filaModel.tempoMedioPrincipal,
-            tempoMedioPrioridade = filaModel.tempoMedioPrioridade
-            )
-        )
+            deveConfirmarPresenca = false,
+            tempoMedio = tempoMedio,
+        ))
     }
 
     @PutMapping("/sair")

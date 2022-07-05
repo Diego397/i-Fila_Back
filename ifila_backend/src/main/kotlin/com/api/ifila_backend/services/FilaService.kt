@@ -1,7 +1,6 @@
 package com.api.ifila_backend.services
 
 import com.api.ifila_backend.models.FilaModel
-import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.repositories.FilaRepository
 import org.springframework.stereotype.Service
 import java.util.*

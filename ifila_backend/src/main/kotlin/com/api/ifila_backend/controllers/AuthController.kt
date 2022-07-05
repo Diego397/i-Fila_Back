@@ -3,7 +3,6 @@ package com.api.ifila_backend.controllers
 import com.api.ifila_backend.dtos.LoginDTO
 import com.api.ifila_backend.dtos.LoginRespostaDTO
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
-import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
 import com.api.ifila_backend.utils.JWTUtils
 import io.swagger.annotations.*

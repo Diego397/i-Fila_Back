@@ -1,12 +1,9 @@
 package com.api.ifila_backend.configurations
 
 import com.google.common.base.Predicates
-import org.hibernate.usertype.DynamicParameterizedType.ParameterType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.http.ResponseEntity
-import org.springframework.web.context.request.async.DeferredResult
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
