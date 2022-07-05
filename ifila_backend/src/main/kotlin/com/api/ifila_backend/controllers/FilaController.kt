@@ -264,7 +264,7 @@ class FilaController (val filaService: FilaService,
         if (!filaModel.clienteConfirmouPresenca && pular == "0")
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
 
-        if (!filaModel.chamarCliente)
+        if (!filaModel.chamarCliente && pular == "1")
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não chamado!"))
 
         var idPrimeiro:UUID? = null
@@ -451,7 +451,7 @@ class FilaController (val filaService: FilaService,
 
         return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
             posicao = posicaoCliente,
-            deveConfirmarPresenca = false,
+            deveConfirmarPresenca = usuarioModel.infoFila!!.presencaSolicitada,
             tempoMedio = tempoMedio,
         ))
     }
@@ -532,10 +532,11 @@ class FilaController (val filaService: FilaService,
 
     // Apenas para debug
     @GetMapping("/{codigoFila}")
-    @ApiOperation(value = "Retorna a lista de id de uma fila principal")
+    @ApiOperation(value = "Retorna as informacoes da fila")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Lista de usuários na fila", response = UsuarioModel::class, responseContainer = "List"),
+        ApiResponse(code = 200, message = "Fila", response = GetFilaDTO::class),
     )
+    @PreAuthorize("hasRole('usuario')")
     fun getFila(
         @PathVariable (value = "codigoFila") codigoFila: String,
     ): ResponseEntity<Any> {
@@ -543,7 +544,15 @@ class FilaController (val filaService: FilaService,
         if (!filaModelOptional.isPresent)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Código inválido!"))
 
-        return ResponseEntity.status(HttpStatus.OK).body(filaModelOptional.get().filaPrincipal)
+        val filaModel = filaModelOptional.get()
+
+        return ResponseEntity.status(HttpStatus.OK).body(GetFilaDTO(
+            statusFila = filaModel.estabelecimento.statusFila,
+            qtdUsuariosFilaPrincipal = filaModel.filaPrincipal.size,
+            qtdUsuariosFilaPrioridade = filaModel.filaPrioridade.size,
+            tempoMedioPrincipal = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal),
+            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade)
+        ))
     }
 
     // Modifica informações do usuário para indicar que não está em uma fila

@@ -43,7 +43,6 @@ class FilaModel {
     @Column(name = "tempoMedioPrioridade" )
     var tempoMedioPrioridade: Long = 1
 
-
     @Column(name = "filaPrincipal")
     @ElementCollection
     var filaPrincipal: MutableList<UUID> = mutableListOf<UUID>()
