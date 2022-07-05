@@ -17,11 +17,15 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
+import java.time.Duration
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.validation.Valid
+import kotlin.time.Duration.Companion.minutes
 
 @RestController
 @CrossOrigin(origins = ["*"], maxAge = 3600)
@@ -141,6 +145,7 @@ class FilaController (val filaService: FilaService,
             tamanhoFilaPrincipal = tamanhoFilaPrincipal,
             tamanhoFilaPrioridade = tamanhoFilaPrioridade,
             maximoPessoasFila = filaModel.capacidadeMaxima!!,
+//            ARRUMAR: tempo deve ser calculado
             tempoMedio = LocalTime.parse("00:05"),
             horarioMaximoEntrada = filaModel.horarioMaximo!!,
             chamarCliente = filaModel.chamarCliente,
@@ -179,7 +184,7 @@ class FilaController (val filaService: FilaService,
 
         var idPrimeiro:UUID? = null
 
-        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
+        if(filaModel.ultimoPrioridade) // O ultimo chamado foi prioridade
             if (!filaModel.filaPrincipal.isEmpty())
                 idPrimeiro = filaModel.filaPrincipal[0]
             else
@@ -232,43 +237,44 @@ class FilaController (val filaService: FilaService,
         if (tamanhoFilaPrincipal == 0 && tamanhoFilaPrioridade == 0)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Não há nenhum usuario na fila!"))
 
-
         if (!filaModel.clienteConfirmouPresenca && pular != "0")
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
 
-
         var idPrimeiro:UUID? = null
+        var tempoMedioFilaPrincipal: LocalTime? = null
+        var tempoMedioFilaPrioridade: LocalTime? = null
+        var filaPrincipal = true
 
-        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
-            if (!filaModel.filaPrincipal.isEmpty()) {
-                idPrimeiro = filaModel.filaPrincipal[0]
-                filaModel.tipoAtendido = false
-                filaModel.filaPrincipal.removeFirst()
-            }
-            else {
-                idPrimeiro = filaModel.filaPrioridade[0]
-                filaModel.tipoAtendido = true
-                filaModel.filaPrioridade.removeFirst()
-            }
-        else // O ultimo chamado foi normal
-            if (!filaModel.filaPrioridade.isEmpty()) {
-                idPrimeiro = filaModel.filaPrioridade[0]
-                filaModel.tipoAtendido = true
-                filaModel.filaPrioridade.removeFirst()
-            }
-            else {
-                idPrimeiro = filaModel.filaPrincipal[0]
-                filaModel.tipoAtendido = false
-                filaModel.filaPrincipal.removeFirst()
-            }
+// ULTIMA: PRIORIDADE && PRINCIPAL: VAZIA || ULTIMA: PRINCIPAL && PRIORIDADE: NAO VAZIA
+        if ((filaModel.ultimoPrioridade && filaModel.filaPrincipal.isEmpty()) || (!filaModel.ultimoPrioridade && filaModel.filaPrioridade.isNotEmpty())) {
+            idPrimeiro = filaModel.filaPrioridade[0]
+            filaModel.ultimoPrioridade = true
+            filaModel.filaPrioridade.removeFirst()
+            filaPrincipal = false
+        } else {
+            idPrimeiro = filaModel.filaPrincipal[0]
+            filaModel.ultimoPrioridade = false
+            filaModel.filaPrincipal.removeFirst()
+        }
+
+        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)!!
+
+        var horarioSaida: LocalDateTime = LocalDateTime.now(ZoneId.of("America/Fortaleza"))
+
+//        usuarioFila.infoFila!!.horarioEntrada - horarioSaida
+        // ARRUMAR: FAZER O DURATION FUNCIONAR
+        val duracao = 5.minutes
+
+        if (filaPrincipal)
+            filaModel.tempoMedioPrincipal = duracao
+        else
+            filaModel.tempoMedioPrioridade = duracao
 
         removerUsuarioFila(idPrimeiro)
         filaModel.chamarCliente = false
         filaModel.clienteConfirmouPresenca = false
 
         filaService.save(filaModel)
-
-        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)!!
 
         var mensagem = ""
         if (pular == "1") // Cliente Pulado
@@ -287,53 +293,6 @@ class FilaController (val filaService: FilaService,
         ))
     }
 
-/*    @PutMapping("/pularcliente")
-    @ApiOperation(value = "Pular o cliente que foi chamado e não confirmou a presença")
-    @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
-    )
-    @PreAuthorize("hasRole('estabelecimento')")
-    fun pularCliente(
-        @PathVariable (value = "codigoFila") codigoFila: String,
-        @RequestParam(name="Tipo de Fila", defaultValue = "principal", required = false) tipoFila: String,
-        @ApiIgnore @RequestHeader("Authorization") authorization: String
-    ): ResponseEntity<Any> {
-
-        val usuarioModelOptional = lerToken(authorization)
-        if (!usuarioModelOptional.isPresent)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
-        val usuarioModel = usuarioModelOptional.get()
-
-        val estabelecimentoModel = usuarioModel.estabelecimento
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não cadastrado!"))
-
-        if (!estabelecimentoModel.statusFila)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Fila não está aberta!"))
-
-        val filaModel = estabelecimentoModel.fila!!
-
-        if (!filaModel.chamarCliente)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Presença do cliente não solicitada!"))
-
-        var idPrimeiro: UUID? = null
-
-        if(filaModel.tipoAtendido) // O ultimo chamado foi prioridade
-            if (!filaModel.filaPrincipal.isEmpty())
-                idPrimeiro = filaModel.filaPrincipal[0]
-            else
-                idPrimeiro = filaModel.filaPrioridade[0]
-        else // O ultimo chamado foi normal
-            if (!filaModel.filaPrioridade.isEmpty())
-                idPrimeiro = filaModel.filaPrioridade[0]
-            else
-                idPrimeiro = filaModel.filaPrincipal[0]
-
-        val usuarioFila = usuarioService.findByIdOrNull(idPrimeiro)
-
-        return
-    }*/
-
 
     // Rotas que podem ser acessadas pelos usuários
 
@@ -346,7 +305,7 @@ class FilaController (val filaService: FilaService,
     @PreAuthorize("hasRole('usuario')")
     fun entrarFila(
         @PathVariable (value = "codigoFila") codigoFila: String,
-        @RequestParam(name="Tipo de Fila", defaultValue = "principal", required = false) tipoFila: String,
+        @RequestParam(name="tipoFila", defaultValue = "principal", required = false) tipoFila: String,
         @ApiIgnore @RequestHeader("Authorization") authorization: String
     ): ResponseEntity<Any> {
 
@@ -400,7 +359,12 @@ class FilaController (val filaService: FilaService,
 
         usuarioService.save(usuarioModel)
 
-        return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(posicao = posicaoCliente, deveConfirmarPresenca = false, tempoMedio = LocalTime.parse("00:05")))
+        return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
+            posicao = posicaoCliente,
+            deveConfirmarPresenca = false,
+            tempoMedioPrincipal = filaModel.tempoMedioPrincipal,
+            tempoMedioPrioridade = filaModel.tempoMedioPrioridade)
+        )
     }
 
     @GetMapping("/infoposicao")
@@ -433,7 +397,11 @@ class FilaController (val filaService: FilaService,
             posicaoCliente = filaModel.filaPrincipal.indexOf(usuarioModel.id) + 1
 
         return ResponseEntity.status(HttpStatus.OK).body(InfoPosicaoFilaDTO(
-            posicao = posicaoCliente, deveConfirmarPresenca = usuarioModel.infoFila!!.presencaSolicitada, tempoMedio = LocalTime.parse("00:05"))
+            posicao = posicaoCliente,
+            deveConfirmarPresenca = usuarioModel.infoFila!!.presencaSolicitada,
+            tempoMedioPrincipal = filaModel.tempoMedioPrincipal,
+            tempoMedioPrioridade = filaModel.tempoMedioPrioridade
+            )
         )
     }
 

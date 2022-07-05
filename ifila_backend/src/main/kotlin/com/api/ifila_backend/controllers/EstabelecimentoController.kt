@@ -1,8 +1,8 @@
 package com.api.ifila_backend.controllers
 
 import com.api.ifila_backend.dtos.EstabelecimentoDTO
+import com.api.ifila_backend.dtos.EstabelecimentoReturnDTO
 import com.api.ifila_backend.dtos.MensagemPadraoDTO
-import com.api.ifila_backend.dtos.UsuarioDTO
 import com.api.ifila_backend.models.EstabelecimentoModel
 import com.api.ifila_backend.models.FilaModel
 import com.api.ifila_backend.models.UsuarioModel
@@ -45,7 +45,7 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         @RequestBody @Valid estabelecimentoDTO: EstabelecimentoDTO,
         @ApiIgnore @RequestHeader("Authorization") authorization: String
     ): ResponseEntity<Any> {
-
+        // Checar o CNPJ, CODIGO
         val usuarioModelOptional = lerToken(authorization)
         if (!usuarioModelOptional.isPresent)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Usuário não encontrado!"))
@@ -54,6 +54,11 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
 
         if (usuarioModel.estabelecimento != null)
             return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Usuário já possui estabelecimento!"))
+
+        when{
+            estabelecimentoService.existsByCnpj(estabelecimentoDTO.cnpj) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Cnpj já cadastrado."))
+            estabelecimentoService.existsByCodigo(estabelecimentoDTO.codigo) -> return ResponseEntity.status(HttpStatus.CONFLICT).body(MensagemPadraoDTO("Código já existe"))
+        }
 
         val estabelecimentoModel = EstabelecimentoModel()
         BeanUtils.copyProperties(estabelecimentoDTO, estabelecimentoModel)
@@ -188,6 +193,23 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         if(!estabelecimentoModelOptional.isPresent)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não encontrado!"))
 
-        return ResponseEntity.status(HttpStatus.OK).body(estabelecimentoModelOptional)
+        val estabelecimentoModel = estabelecimentoModelOptional.get()
+
+
+        return ResponseEntity.status(HttpStatus.OK).body(EstabelecimentoReturnDTO(
+            codigo = estabelecimentoModel.codigo,
+            nome = estabelecimentoModel.nome,
+            endereco = estabelecimentoModel.endereco,
+            telefone = estabelecimentoModel.telefone,
+            cnpj = estabelecimentoModel.cnpj,
+            descricao = estabelecimentoModel.descricao,
+            horarioAbertura = estabelecimentoModel.horarioAbertura,
+            horarioFechamento = estabelecimentoModel.horarioFechamento,
+            categoria = estabelecimentoModel.categoria,
+            linkImagem = estabelecimentoModel.linkImagem,
+            qtdPessoasFilaPrincipal = estabelecimentoModel.fila!!.filaPrincipal?.size,
+            qtdPessoasFilaPrioridade = estabelecimentoModel.fila!!.filaPrioridade?.size!!,
+            tempoMedioFilaPrincipal = estabelecimentoModel.fila!!.tempoMedioPrincipal,
+            tempoMedioFilaPrioridade = estabelecimentoModel.fila!!.tempoMedioPrioridade))
     }
 }

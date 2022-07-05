@@ -22,11 +22,20 @@ class EstabelecimentoService(val estabelecimentoRepository: EstabelecimentoRepos
         return estabelecimentoRepository.findById(id)
     }
 
+    @Transactional
     fun delete(estabelecimentoModel: EstabelecimentoModel) {
         return estabelecimentoRepository.delete(estabelecimentoModel)
     }
 
     fun findByCode(codigoEstab: String): Optional<EstabelecimentoModel> {
         return estabelecimentoRepository.findByCodigo(codigoEstab)
+    }
+
+    fun existsByCnpj(cnpj: String): Boolean {
+        return estabelecimentoRepository.existsByCnpj(cnpj)
+    }
+
+    fun existsByCodigo(codigo: String): Boolean {
+        return estabelecimentoRepository.existsByCodigo(codigo)
     }
 }

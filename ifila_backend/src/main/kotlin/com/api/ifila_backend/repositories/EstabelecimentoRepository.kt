@@ -8,4 +8,6 @@ import java.util.*
 @Repository
 interface EstabelecimentoRepository : JpaRepository<EstabelecimentoModel, UUID> {
     fun findByCodigo(codigoEstab: String): Optional<EstabelecimentoModel>
+    fun existsByCnpj(cnpj: String): Boolean
+    fun existsByCodigo(codigo: String): Boolean
 }
