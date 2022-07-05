@@ -217,7 +217,16 @@ class FilaController (val filaService: FilaService,
         filaModel.chamarCliente = true
         filaService.save(filaModel)
 
-        return ResponseEntity.status(HttpStatus.OK).body(usuarioFila)
+        return ResponseEntity.status(HttpStatus.OK).body(AtenderClienteDTO(
+            id = usuarioFila.id,
+            nome = usuarioFila.nome,
+            dataDeNascimento = usuarioFila.dataDeNascimento,
+            email = usuarioFila.email,
+            numeroCelular = usuarioFila.numeroCelular,
+            cpf = usuarioFila.cpf,
+            mensagem = "Usuario Chamado!",
+            tipoFila = usuarioFila.infoFila!!.tipoFila
+        ))
     }
 
     @PutMapping("/atendercliente")
@@ -252,8 +261,11 @@ class FilaController (val filaService: FilaService,
         if (tamanhoFilaPrincipal == 0 && tamanhoFilaPrioridade == 0)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Não há nenhum usuario na fila!"))
 
-        if (!filaModel.clienteConfirmouPresenca && pular != "0")
+        if (!filaModel.clienteConfirmouPresenca && pular == "0")
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não confirmou a presença!"))
+
+        if (!filaModel.chamarCliente)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MensagemPadraoDTO("Cliente não chamado!"))
 
         var idPrimeiro:UUID? = null
         var filaPrincipal = true
@@ -294,6 +306,8 @@ class FilaController (val filaService: FilaService,
 
             filaModel.tempoMedioPrioridade = novaMedia
         }
+
+        var tipoFila:String = usuarioFila.infoFila!!.tipoFila
         removerUsuarioFila(idPrimeiro)
         filaModel.chamarCliente = false
         filaModel.clienteConfirmouPresenca = false
@@ -314,7 +328,8 @@ class FilaController (val filaService: FilaService,
             email = usuarioFila.email,
             numeroCelular = usuarioFila.numeroCelular,
             cpf = usuarioFila.cpf,
-            mensagem = mensagem
+            mensagem = mensagem,
+            tipoFila = tipoFila
         ))
     }
 

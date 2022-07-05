@@ -10,5 +10,6 @@ data class AtenderClienteDTO(
     var email:String,
     var numeroCelular:String,
     var cpf:String,
+    var tipoFila:String,
     var mensagem:String
 )
