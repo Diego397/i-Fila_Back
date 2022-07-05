@@ -43,8 +43,9 @@ class FilaController (val filaService: FilaService,
     @PostMapping("/abrir")
     @ApiOperation(value = "Abrir fila do estabelecimento")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Fila Aberta", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Usuario não encontrado", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Fila Aberta", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 400, message = "Fila já está aberta", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun abrirFila(
@@ -77,8 +78,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/fechar")
     @ApiOperation(value = "Fecha fila de um estabelecimento")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Fila fechada", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 400, message = "Fila não está aberta", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun fecharFila(
@@ -119,7 +121,9 @@ class FilaController (val filaService: FilaService,
     @GetMapping("/info")
     @ApiOperation(value = "Retorna as informações da fila atual do estabelecimento")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Lista de usuários na fila", response = UsuarioModel::class, responseContainer = "List"),
+        ApiResponse(code = 200, message = "Informações da fila do estabelecimento", response = InfoFilaEstabelecimentoDTO::class),
+        ApiResponse(code = 400, message = "Fila não está aberta", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun getInfoFila(
@@ -156,8 +160,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/chamarcliente")
     @ApiOperation(value = "Solicita presença do próximo cliente")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Informações do cliente chamado", response = UsuarioModel::class),
+        ApiResponse(code = 400, message = "Fila vazia | presença já solicitada", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun chamarCliente(
@@ -209,8 +214,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/atendercliente")
     @ApiOperation(value = "Atende ou pula cliente na fila")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Informações do cliente atendido", response = AtenderClienteDTO::class),
+        ApiResponse(code = 400, message = "Fila vazia/fechada | Cliente não confirmou presença (atender)", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('estabelecimento')")
     fun atenderCliente(
@@ -299,8 +305,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/entrar/{codigoFila}")
     @ApiOperation(value = "Entra na fila de um estabelecimento")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Informações da posição do cliente na fila", response = InfoPosicaoFilaDTO::class),
+        ApiResponse(code = 400, message = "Fila fechada | Capacidade/horário máximo atingido", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('usuario')")
     fun entrarFila(
@@ -370,7 +377,9 @@ class FilaController (val filaService: FilaService,
     @GetMapping("/infoposicao")
     @ApiOperation(value = "Retorna as informações da fila atual do usuário")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Lista de usuários na fila", response = UsuarioModel::class, responseContainer = "List"),
+        ApiResponse(code = 200, message = "Informações da posição do cliente na fila", response = InfoPosicaoFilaDTO::class),
+        ApiResponse(code = 400, message = "Usuário não está em fila", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('usuario')")
     fun getInfoPosicaoAtual(
@@ -408,8 +417,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/sair")
     @ApiOperation(value = "Sair da fila de um estabelecimento")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Usuário saiu da fila", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 400, message = "Usuário não está em fila", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('usuario')")
     fun sairFila(
@@ -441,8 +451,9 @@ class FilaController (val filaService: FilaService,
     @PutMapping("/confirmarpresenca")
     @ApiOperation(value = "Confirmar presença na fila")
     @ApiResponses(
-//        ApiResponse(code = 200, message = "Cliente entrou na fila", response = MensagemPadraoDTO::class),
-//        ApiResponse(code = 404, message = "Código da fila inválido", response = MensagemPadraoDTO::class)
+        ApiResponse(code = 200, message = "Usuário saiu da fila", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 400, message = "Usuário não está em fila | Presença não solicitada", response = MensagemPadraoDTO::class),
+        ApiResponse(code = 404, message = "Recurso não encontrado", response = MensagemPadraoDTO::class)
     )
     @PreAuthorize("hasRole('usuario')")
     fun confirmarPresencaFila(

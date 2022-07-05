@@ -182,7 +182,7 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
     @GetMapping("/codigo/{codigoEstab}")
     @ApiOperation(value = "Retorna um estabelecimento")
     @ApiResponses(
-        ApiResponse(code = 200, message = "Informações de um Estabelecimento", response = EstabelecimentoModel::class),
+        ApiResponse(code = 200, message = "Informações de um Estabelecimento", response = EstabelecimentoReturnDTO::class),
         ApiResponse(code = 404, message = "Estabelecimento não encontrado", response = MensagemPadraoDTO::class)
     )
     fun getEstabelecimentoPorCodigo(
