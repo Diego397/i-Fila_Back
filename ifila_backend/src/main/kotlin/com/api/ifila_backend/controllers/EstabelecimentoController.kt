@@ -212,7 +212,8 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
             qtdPessoasPrincipal = filaModel.filaPrincipal.size,
             qtdPessoasPrioridade = filaModel.filaPrioridade.size,
             tempoMedioPrincipal = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrincipal),
-            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade)
+            tempoMedioPrioridade = filaUtils.calcularTempoMedio(filaModel.tempoMedioPrioridade),
+            statusFila = estabelecimentoModel.statusFila
         ))
     }
 }

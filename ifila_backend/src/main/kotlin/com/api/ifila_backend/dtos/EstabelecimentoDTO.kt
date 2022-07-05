@@ -124,4 +124,8 @@ data class EstabelecimentoReturnDTO(
     @JsonFormat(pattern = "HH:mm:ss")
     @ApiModelProperty(position = 14, example = "00:05")
     var tempoMedioPrioridade: LocalTime,
+
+    @NotNull
+    @ApiModelProperty(position = 15)
+    var statusFila: Boolean = false,
 )
