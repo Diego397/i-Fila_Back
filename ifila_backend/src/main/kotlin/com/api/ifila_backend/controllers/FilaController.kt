@@ -547,6 +547,7 @@ class FilaController (val filaService: FilaService,
         val filaModel = filaModelOptional.get()
 
         return ResponseEntity.status(HttpStatus.OK).body(GetFilaDTO(
+//            estabelecimentoModel.statusfila
             statusFila = filaModel.estabelecimento.statusFila,
             qtdUsuariosFilaPrincipal = filaModel.filaPrincipal.size,
             qtdUsuariosFilaPrioridade = filaModel.filaPrioridade.size,

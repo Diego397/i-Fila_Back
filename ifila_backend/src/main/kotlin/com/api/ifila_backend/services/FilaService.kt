@@ -16,10 +16,6 @@ class FilaService (val filaRepository: FilaRepository) {
         return filaRepository.existsByCodigoFila(codigoFila)
     }
 
-/*    fun findAll(): List<> {
-        return filaRepository.findAll()
-    }*/
-
     fun findByCode(codigoFila: String): Optional<FilaModel> {
         return filaRepository.findByCodigoFila(codigoFila)
     }
@@ -29,7 +25,8 @@ class FilaService (val filaRepository: FilaRepository) {
         return filaRepository.save(filaModel)
     }
 
-//    fun findByFilaPrincipal(): List<UUID>? {
-//        return filaRepository.findByFilaPrincial()
-//    }
+    @Transactional
+    fun delete(filaModel: FilaModel) {
+        return filaRepository.delete(filaModel)
+    }
 }

@@ -132,6 +132,8 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         BeanUtils.copyProperties(estabelecimentoDTO, estabelecimentoModel)
         estabelecimentoModel.id = estabelecimentoModelOptional.get().id
         estabelecimentoModel.dataDeCriacao = estabelecimentoModelOptional.get().dataDeCriacao
+        estabelecimentoModel.fila = estabelecimentoModelOptional.get().fila
+        estabelecimentoModel.statusFila = estabelecimentoModelOptional.get().statusFila
 
         return ResponseEntity.status(HttpStatus.OK).body(estabelecimentoService.save(estabelecimentoModel))
     }
@@ -158,7 +160,15 @@ class EstabelecimentoController(val estabelecimentoService: EstabelecimentoServi
         if (usuarioModelOptional.get().estabelecimento != estabelecimentoModelOptional.get())
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(MensagemPadraoDTO("Você não tem autorização para deletar esse estabelecimento"))
 
+//        if (estabelecimentoModelOptional.get().fila != null) {
+//            filaService.delete(estabelecimentoModelOptional.get().fila!!)
+//            estabelecimentoModelOptional.get().fila = null
+//        }
+
         estabelecimentoService.delete(estabelecimentoModelOptional.get())
+
+        usuarioModelOptional.get().estabelecimento = null
+        usuarioService.save(usuarioModelOptional.get())
 
         return ResponseEntity.status(HttpStatus.OK).body(MensagemPadraoDTO("Estabelecimento removido com sucesso"))
     }

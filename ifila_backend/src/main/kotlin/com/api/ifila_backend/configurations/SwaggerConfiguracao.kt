@@ -42,7 +42,7 @@ class SwaggerConfiguracao {
         return ApiInfoBuilder()
             .title("i.fila API")
             .description("API para comunicação com o backend do aplicativo i.fila")
-            .version("1.0.0")
+            .version("1.0.5")
             .build()
     }
 

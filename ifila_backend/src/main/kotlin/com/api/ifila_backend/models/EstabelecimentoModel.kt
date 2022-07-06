@@ -53,7 +53,7 @@ class EstabelecimentoModel {
     @Column(nullable = false)
     lateinit var linkImagem: String
 
-    @OneToOne(cascade = [CascadeType.ALL])
+    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "filaId")
     @JsonIgnore
     var fila: FilaModel? = null
