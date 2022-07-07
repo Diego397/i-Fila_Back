@@ -1,10 +1,10 @@
 package com.api.ifila_backend.controllers
 
-import com.api.ifila_backend.dtos.UsuarioDTO
+import com.api.ifila_backend.dtos.*
+import com.api.ifila_backend.models.EstabelecimentoModel
 import com.api.ifila_backend.models.UsuarioModel
 import com.api.ifila_backend.services.UsuarioService
-import com.api.ifila_backend.dtos.MensagemPadraoDTO
-import com.api.ifila_backend.dtos.UsuarioPutDTO
+import com.api.ifila_backend.services.EstabelecimentoService
 import io.swagger.annotations.*
 import org.springframework.beans.BeanUtils
 import org.springframework.http.HttpStatus
@@ -21,7 +21,8 @@ import javax.validation.Valid
     "/usuarios",
     produces = ["application/json"]
 )
-class UsuarioController (usuarioService: UsuarioService) : BaseController(usuarioService) {
+class UsuarioController (usuarioService: UsuarioService,
+                         val estabelecimentoService: EstabelecimentoService) : BaseController(usuarioService) {
 
     @PostMapping(consumes = ["application/json"])
     @ApiOperation(value = "Cadastra um usuário")
@@ -131,7 +132,31 @@ class UsuarioController (usuarioService: UsuarioService) : BaseController(usuari
     fun getUsuarioLogado(@ApiIgnore @RequestHeader("Authorization") authorization: String): ResponseEntity<Any> {
 
         val usuarioModelOptional = lerToken(authorization)
+        val usuarioModel = usuarioModelOptional.get()
 
-        return ResponseEntity.status(HttpStatus.OK).body(usuarioModelOptional)
+        var nomeEstabelecimento:String = "null"
+
+        if (usuarioModel.emFila) {
+            val codFila = usuarioModel.infoFila!!.codigoFila
+            val estabelecimentoModelOptional: Optional<EstabelecimentoModel> = estabelecimentoService.findByCode(codFila)
+            if(!estabelecimentoModelOptional.isPresent)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(MensagemPadraoDTO("Estabelecimento não encontrado!"))
+
+            val estabelecimentoModel = estabelecimentoModelOptional.get()
+            nomeEstabelecimento = estabelecimentoModel.nome
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+            GetUsuarioDTO(
+                nome = usuarioModel.nome,
+                email = usuarioModel.email,
+                cpf = usuarioModel.cpf,
+                numeroCelular = usuarioModel.numeroCelular,
+                dataDeNascimento = usuarioModel.dataDeNascimento,
+                emFila = usuarioModel.emFila,
+                nomeEstabelecimento = nomeEstabelecimento
+            )
+        )
     }
 }
+// Tudo ok!
