@@ -10,7 +10,7 @@ data class InfoPosicaoFilaDTO(
     val posicao: Int,
     val deveConfirmarPresenca: Boolean,
 
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(example = "00:10")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(example = "00-10-00")
     val tempoMedio: LocalTime,
 )

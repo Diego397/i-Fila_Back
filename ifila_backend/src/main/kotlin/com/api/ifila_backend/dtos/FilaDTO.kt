@@ -10,11 +10,11 @@ data class FecharFilaReturnDTO(
     val qtdUsuariosAtendidiosPrincipal: Int,
     val qtdUsuariosAtendidiosPrioridade: Int,
 
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH-mm-ss")
     @ApiModelProperty(example = "00:00:10")
     val tempoMedioPrincipal: LocalTime,
 
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH-mm-ss")
     @ApiModelProperty(example = "00:00:10")
     val tempoMedioPrioridade: LocalTime
 )
@@ -25,11 +25,11 @@ data class GetFilaDTO(
     val qtdUsuariosFilaPrincipal: Int,
     val qtdUsuariosFilaPrioridade: Int,
 
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(example = "00:00:10")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(example = "00-00-10")
     val tempoMedioPrincipal: LocalTime,
 
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(example = "00:00:10")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(example = "00-00-10")
     val tempoMedioPrioridade: LocalTime
 )

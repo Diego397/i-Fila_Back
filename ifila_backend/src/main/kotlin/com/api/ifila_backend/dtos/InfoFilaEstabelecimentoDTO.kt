@@ -14,12 +14,12 @@ data class InfoFilaEstabelecimentoDTO (
     val chamarCliente: Boolean,
 
 
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(example = "00:10")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(example = "00-10-00")
     val tempoMedioPrincipal: LocalTime,
 
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(example = "00:10")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(example = "00-10-00")
     val tempoMedioPrioridade: LocalTime,
 
 

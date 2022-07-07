@@ -42,3 +42,36 @@ data class UsuarioDTO (
     @ApiModelProperty(position = 6, example = "22/10/2001")
     val dataDeNascimento: LocalDate,
 )
+
+@ApiModel
+data class GetUsuarioDTO (
+
+    @NotNull
+    @ApiModelProperty(position = 1)
+    val nome:String,
+
+    @NotNull
+    @ApiModelProperty(position = 2, example = "exemplo@gmail.com")
+    val email:String,
+
+    @NotNull
+    @ApiModelProperty(position = 3, example = "111.111.111-11")
+    val cpf: String,
+
+    @NotNull
+    @ApiModelProperty(position = 4, example = "(85)99999-9999")
+    val numeroCelular:String,
+
+    @NotNull
+    @ApiModelProperty(position = 5, example = "22/10/2001")
+    val dataDeNascimento: LocalDate,
+
+    @NotNull
+    @ApiModelProperty(position = 6, example = "false")
+    val emFila: Boolean,
+
+    @NotNull
+    @ApiModelProperty(position = 7, example = "Nome do Estabelecimento")
+    val nomeEstabelecimento:String,
+
+)

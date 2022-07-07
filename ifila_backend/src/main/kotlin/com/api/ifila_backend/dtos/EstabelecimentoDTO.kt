@@ -116,13 +116,13 @@ data class EstabelecimentoReturnDTO(
     var qtdPessoasPrioridade: Int,
 
     @NotNull
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(position = 13, example = "00:05")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(position = 13, example = "00-05-00")
     var tempoMedioPrincipal: LocalTime,
 
     @NotNull
-    @JsonFormat(pattern = "HH:mm:ss")
-    @ApiModelProperty(position = 14, example = "00:05")
+    @JsonFormat(pattern = "HH-mm-ss")
+    @ApiModelProperty(position = 14, example = "00-05-00")
     var tempoMedioPrioridade: LocalTime,
 
     @NotNull
